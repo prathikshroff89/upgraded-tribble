@@ -1,0 +1,177 @@
+import { By, Key } from 'selenium-webdriver';
+import { driver, browser } from 'thousandeyes';
+
+runScript();
+
+async function runScript() {
+    
+    await configureDriver();
+    
+    
+    await driver.get('https://sfdcb2b.intuit.com/');
+
+    await click(By.id(`username`));
+
+    await typeText('pshroff', By.id(`username`));
+
+    await pressEnter(By.id(`password`));
+
+    // Click on 'Close'
+	await click(By.id(`tryLexDialogX`));
+
+    // Click on 'Back to Care Console'
+	await click(By.css(`[href="/console"]`));
+
+    await click(By.id(`phSearchInput`));
+
+    await typeText('9130348428425596', By.id(`phSearchInput`));
+
+    await pressEnter(By.id(`phSearchInput`));
+
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe:nth-child(47)`)))
+
+    // Click on 'Account Detail'
+	await click(By.css(`.highlight > .cellCol3 > a`));
+
+    await driver.switchTo().defaultContent()
+
+    await click(By.id(`ext-comp-1025`));
+
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe:nth-child(47)`)))
+
+    // Click on 'New QBO Order'
+	await click(By.css(`#topButtonRowacctDetail_j_id14 > [name="new_qbo_order"]`));
+
+    // Click on 'QBO only or QBO + Payroll bundle'
+	await click(By.css(`[data-aura-rendered-by="33:0"]`));
+
+    // Click on 'Next'
+	await click(By.css(`[data-aura-rendered-by="105:0"]`));
+
+    await driver.switchTo().defaultContent()
+
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe:nth-child(47)`)))
+
+    await click(By.css(`[aria-describedby="ui-id-1"] > [aria-label="fa-circle-o"]`));
+
+    // Click on 'Next - Order Details'
+	await click(By.css(`#nextOrderDetailButton > .ui-button-text`));
+
+    await click(By.css(`[data-uid="17700"] input`));
+
+    await typeText('7555 Torrey Santa Fe Rd', By.css(`[data-uid="17700"] input`));
+
+    await typeText('San Diego', By.css(`[data-uid="17709"] input`));
+
+    await selectOption(By.css(`select:nth-child(1)`), By.css(`[value="CA"]`));
+
+    await click(By.css(`[data-uid="17756"] input`));
+
+    await typeText('92129', By.css(`[data-uid="17756"] input`));
+
+    // Click on 'Next - Order'
+	await click(By.css(`#sk-2OPf3Y-925 > .ui-button-text`));
+
+    await click(By.css(`[data-uid="18195"] input`));
+
+    await typeText('Synthetic Monitoring', By.css(`[data-uid="18195"] input`));
+
+    await typeText('343434343434343', By.css(`.addAllCC`));
+
+    // Click on 'Skip to main content 🐙 🐙 New Onli...'
+	await click(By.css(`.hasMotif`));
+
+    await selectOption(By.css(`[data-uid="18233"] > select`), By.css(`[value="07"]`));
+
+    await selectOption(By.css(`[data-uid="18244"] > select`), By.css(`[value="2024"]`));
+
+    await click(By.css(`[data-uid="18257"] input`));
+
+    await typeText('1234', By.css(`[data-uid="18257"] input`));
+
+    // Click on 'Skip to main content 🐙 🐙 New Onli...'
+	await click(By.css(`.hasMotif`));
+
+    await click(By.css(`[data-uid="18341"] > input`));
+
+    await driver.switchTo().defaultContent()
+
+    await click(By.id(`userNavLabel`));
+
+    // Click on 'Logout'
+	await click(By.id(`app_logout`));
+    
+}
+
+async function configureDriver() {
+    await driver.manage().window().setRect({ 
+        width: 1200, 
+        height: 901
+    });
+    await driver.manage().setTimeouts({
+        implicit: 7 * 1000, // If an element is not found, reattempt for this many milliseconds
+    });
+}
+
+
+
+async function click(selector) {
+    await simulateHumanDelay();
+
+    const configuredTimeouts = await driver.manage().getTimeouts();
+    const clickAttemptEndTime = Date.now() + configuredTimeouts.implicit;
+
+    await reattemptUntil(attemptToClick, clickAttemptEndTime);
+    
+    async function attemptToClick() {
+        await driver.findElement(selector)
+                    .click();
+    }
+}
+
+async function reattemptUntil(attemptActionFn, attemptEndTime) {
+    const TIME_BETWEEN_ATTEMPTS = 100;
+    let numberOfAttempts = 0;
+    let attemptError;
+    while (Date.now() < attemptEndTime || numberOfAttempts === 0) {
+        try {
+            numberOfAttempts += 1;
+            await attemptActionFn();
+        }
+        catch (error) {
+            attemptError = error;
+            await driver.sleep(TIME_BETWEEN_ATTEMPTS);
+            continue; // Attempt failed, reattempt
+        }
+        attemptError = null;
+        break; // Attempt succeeded, stop attempting
+    }
+
+    const wasAttemptSuccessful = !attemptError;
+    if (!wasAttemptSuccessful) {
+        throw attemptError;
+    }
+}
+
+async function simulateHumanDelay() {
+    await driver.sleep(550);
+}
+
+async function typeText(value, selector) {
+    await simulateHumanDelay();
+    const element = await driver.findElement(selector);
+    await element.clear();
+    await element.sendKeys(value);
+}
+
+async function pressEnter(selector) {
+    await driver.findElement(selector)
+                .sendKeys(Key.RETURN);
+}
+
+async function selectOption(selectSelector, optionSelector) {
+    await simulateHumanDelay();
+    await driver.findElement(selectSelector)
+                .findElement(optionSelector)
+                .click();
+}
