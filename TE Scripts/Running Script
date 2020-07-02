@@ -1,0 +1,264 @@
+import { By, Key, until } from 'selenium-webdriver';
+//import { driver, browser } from 'thousandeyes';
+import { driver, markers, credentials, downloads, transaction } from 'thousandeyes';
+import fetch from 'node-fetch';
+
+runScript();
+
+async function runScript() {
+    
+    await configureDriver();
+    
+    
+    //await driver.get('https://sfdcb2b.intuit.com/');
+    //Get the MFA Code 
+    var eiamtapcredentials = await getEiamTapCredentials();
+    await driver.get('http://sfdcb2b.intuit.com');
+
+    await click(By.id(`username`));
+
+    //await typeText('pshroff', By.id(`username`));
+    await typeText(credentials.get('b2b_username'), By.id(`username`));
+
+
+    //await driver.get('chrome-extension://pbdcmhnchplaclajlkjdmleiikkomaeb/newTabOverride/index.html');
+    await click(By.id(`password`));
+    //await click(By.id(`username`));
+    await typeText(eiamtapcredentials['password'], By.id(`password`));
+
+    //await typeText('pshroff', By.id(`username`));
+    markers.set('Sign In');
+    await driver.takeScreenshot();
+
+    // // Click on 'Sign In'
+    // await click(By.css(`[value="Sign In"]`));
+
+    // // Click on 'Close'
+    // await click(By.id(`tryLexDialogX`));
+    // Click on 'Sign In'
+    await click(By.css(`[value="Sign In"]`));
+    await driver.switchTo().frame(driver.findElement(By.id(`duo_iframe`)))
+    // Click on 'Log In'
+    await click(By.id(`passcode`));
+    // Click on 'passcode'
+    await click(By.name(`passcode`));
+    await typeText(eiamtapcredentials['duo_bypass_code'], By.name(`passcode`));
+    // Click on 'Log In'
+    await click(By.id(`passcode`));
+    markers.set('DUO Log In');
+    await driver.takeScreenshot();
+    await driver.switchTo().defaultContent()
+    markers.set('Back to Care Console');
+    await driver.takeScreenshot();
+
+
+    // Click on 'Back to Sales Console'
+                                       //await driver.takeScreenshot();
+    //await click(By.css(`[href="/console"]`));
+    
+    // Click on 'Care Console'
+    //await click(By.id(`tsidLabel`));
+
+    // Click on 'Sales Console'
+    //await click(By.css(`.menuButtonMenuLink:nth-child(10)`));
+    // Click on 'Back to Care Console'
+    await click(By.css(`[href="/console"]`));
+
+    await click(By.id(`phSearchInput`));
+
+    await click(By.id(`phSearchInput`));
+
+    await typeText('9130348428425596', By.id(`phSearchInput`));
+
+    await pressEnter(By.id(`phSearchInput`));
+
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe[src^="/_ui/search/ui/UnifiedSearchResults?"]`)))
+    //await driver.switchTo().frame(0)
+
+    // Click on 'Carolyn Test Triathlon'
+    //await click(By.xpath(`//*[@id="Account_body"]/table/tbody/tr[2]/th/a`));
+    await driver.findElement(By.linkText(`Account Detail`)).click();
+    //await click(By.css(`[href="javascript:srcUp(%27%2F0012A00002YVZSR%3FsrPos%3D1%26srKp%3D001%26isdtp%3Dvw%27);"]`));
+
+    await driver.switchTo().defaultContent()
+
+    //await click(By.id(`ext-comp-1039`));
+    
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe[src^="/apex/AccountDetailOverride?"]`)))
+
+    // Click on 'New QBO Order'
+    await click(By.css(`#topButtonRowacctDetail_j_id14 > [name="new_qbo_order"]`));
+
+    await click(By.css(`[data-aura-rendered-by="32:0"]`));
+
+    // Click on 'Next'
+    await click(By.css(`[data-aura-rendered-by="105:0"]`));
+
+    await driver.switchTo().defaultContent()
+
+    //await driver.switchTo().frame(driver.findElement(By.css(`iframe:nth-child(47)`)))
+    await driver.switchTo().frame(driver.findElement(By.css(`iframe[src^="/apex/c__OnlineSalesCatalogSkuid?"]`)))
+    
+    await driver.wait(until.elementLocated(By.id(`SkuidDeckMonthly`)), 30000)
+    await driver.wait(until.elementLocated(By.id(`CatalogTable1`)), 30000)
+    //await click(By.xpath(`//*[@id="CatalogTable1"]/div[3]/table/tbody/tr[1]/td[2]/div/div`));
+    await click(By.css(`div[class="nx-list-contents sk-deck"] > div:nth-child(3) > table[class="nx-list nx-skootable-data"] > tbody[class="nx-list-contents"] > tr:nth-child(1)`))
+    //*[@id="CatalogTable1"]/div[3]/table/tbody/tr[1]/td[1]/div/div/i
+    //*[@id="CatalogTable1"]/div[3]/table/tbody/tr[1]/td[2]/div/div
+    //*[@id="CatalogTableTrial1"]/div[3]/table/tbody/tr[1]
+    //html/body/div[1]/div[1]/div[2]/div[1]/div/div[2]/div[5]/div[1]/div[3]/div[3]/div[3]/div[1]/div/div[1]/div/div[2]/div[2]/div[3]/table/tbody/tr[1]
+    //html/body/div[1]/div[1]/div[2]/div[1]/div/div[2]/div[5]/div[1]/div[3]/div[3]/div[3]/div[1]/div/div[3]/div/div[2]/div[2]/div[3]/table/tbody/tr[1]
+    //await click(By.css(`[aria-describedby="ui-id-1"] > [aria-label="fa-circle-o"]`));
+
+    // Click on 'Next - Order Details'
+    await click(By.css(`#nextOrderDetailButton > .ui-button-text`));
+
+    await click(By.css(`[data-uid="17699"] input`));
+
+    await typeText('7555 Torrey Santa Fe Rd', By.css(`[data-uid="17699"] input`));
+
+    await typeText('San Diego', By.css(`[data-uid="17708"] input`));
+
+    await selectOption(By.css(`select:nth-child(1)`), By.css(`[value="CA"]`));
+
+    await typeText('92129', By.css(`[data-uid="17755"] input`));
+
+    //await typeText('92129', By.css(`[data-uid="17756"] input`));
+    // Click on 'Next - Order'
+    await click(By.css(`#sk-2OPf3Y-925 > .ui-button-text`));
+    await click(By.css(`[data-uid="18195"] input`));
+    await typeText('Synthetic Monitoring', By.css(`[data-uid="18195"] input`));
+    await typeText('343434343434343', By.css(`.addAllCC`));
+    // Click on 'Skip to main content 🐙 🐙 New Onli...'
+    await click(By.css(`.hasMotif`));
+    await selectOption(By.css(`[data-uid="18233"] > select`), By.css(`[value="07"]`));
+    await selectOption(By.css(`[data-uid="18244"] > select`), By.css(`[value="2024"]`));
+    await click(By.css(`[data-uid="18257"] input`));
+    await typeText('1234', By.css(`[data-uid="18257"] input`));
+    // Click on 'Skip to main content 🐙 🐙 New Onli...'
+    await click(By.css(`.hasMotif`));
+    await click(By.css(`[data-uid="18341"] > input`));
+    await driver.switchTo().defaultContent()
+
+    await click(By.id(`userNavLabel`));
+    markers.set('UserNavLabel');
+    // Click on 'Logout'
+    markers.set('Logout');
+    await driver.takeScreenshot();
+    await click(By.id(`app_logout`));
+    
+}
+
+async function getOAuthToken() {
+  // Default options are marked with *
+  markers.start('getOAuthToken');
+  
+  var data = "grant_type=client_credentials&client_id=" + credentials.get('client_id') + "&client_secret=" + credentials.get('client_secret') + ""; // body data type must match "Content-Type" header
+  
+  const response = await fetch('https://oauth2-aws.api.intuit.com/oauth2/v1/tokens/bearer', {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      //   'Content-Type': 'application/json'
+      'Content-Type': 'application/x-www-form-urlencoded' 
+    },
+    body: data 
+    }
+);
+  if (!response.ok) {     
+    throw new Error('non-200 response');
+  }
+  markers.stop('getOAuthToken');
+  return response.json(); // parses JSON response into native JavaScript objects
+}
+async function getEiamTapCredentials() {
+  // Default options are marked with *
+  markers.start('getEiamTapCredentials');
+  var token = await getOAuthToken();
+  const response = await fetch('https://eiamtapcredentials.api.intuit.com/v1/credentials/'+ credentials.get('b2b_username'), {
+    method: 'GET', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token['access_token'] 
+      } 
+    }
+);
+  if (!response.ok) {
+    throw new Error('non-200 response');
+  }
+  markers.stop('getEiamTapCredentials');
+  return response.json(); // parses JSON response into native JavaScript objects
+}
+
+
+async function configureDriver() {
+    await driver.manage().window().setRect({ 
+        width: 1200, 
+        height: 901
+    });
+    await driver.manage().setTimeouts({
+        implicit: 20 * 1000, // If an element is not found, reattempt for this many milliseconds
+    });
+}
+
+
+
+async function click(selector) {
+    await simulateHumanDelay();
+
+    const configuredTimeouts = await driver.manage().getTimeouts();
+    const clickAttemptEndTime = Date.now() + configuredTimeouts.implicit;
+
+    await reattemptUntil(attemptToClick, clickAttemptEndTime);
+    
+    async function attemptToClick() {
+        await driver.findElement(selector)
+                    .click();
+    }
+}
+
+async function reattemptUntil(attemptActionFn, attemptEndTime) {
+    const TIME_BETWEEN_ATTEMPTS = 100;
+    let numberOfAttempts = 0;
+    let attemptError;
+    while (Date.now() < attemptEndTime || numberOfAttempts === 0) {
+        try {
+            numberOfAttempts += 1;
+            await attemptActionFn();
+        }
+        catch (error) {
+            attemptError = error;
+            await driver.sleep(TIME_BETWEEN_ATTEMPTS);
+            continue; // Attempt failed, reattempt
+        }
+        attemptError = null;
+        break; // Attempt succeeded, stop attempting
+    }
+
+    const wasAttemptSuccessful = !attemptError;
+    if (!wasAttemptSuccessful) {
+        throw attemptError;
+    }
+}
+
+async function simulateHumanDelay() {
+    await driver.sleep(550);
+}
+
+async function typeText(value, selector) {
+    await simulateHumanDelay();
+    const element = await driver.findElement(selector);
+    await element.clear();
+    await element.sendKeys(value);
+}
+
+async function pressEnter(selector) {
+    await driver.findElement(selector)
+                .sendKeys(Key.RETURN);
+}
+
+async function selectOption(selectSelector, optionSelector) {
+    await simulateHumanDelay();
+    await driver.findElement(selectSelector)
+                .findElement(optionSelector)
+                .click();
+}
