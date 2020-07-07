@@ -1,0 +1,141 @@
+import { By, Key } from 'selenium-webdriver';
+import { driver, markers, credentials } from 'thousandeyes';
+
+runScript();
+
+async function runScript() {
+    
+    await configureDriver();
+    
+    markers.start('login');
+
+    await driver.get('https://sfdcb2c.intuit.com/');
+
+    await click(By.id(`username`));
+
+    await typeText(credentials.get('sfdc-b2c-nomfa-user-name-01'), By.id(`username`));
+
+    await click(By.id(`password`));
+
+    await typeText(credentials.get('sfdc-b2c-nomfa-user-password-01'), By.id(`password`));
+
+    await driver.takeScreenshot();
+
+    // Click on 'Sign In'
+	await click(By.css(`[value="Sign In"]`));
+
+    markers.stop('login');
+    
+
+    // Click on 'OK'
+	await click(By.css(`#ext-comp-1003 .x-btn-mc`));
+
+    
+    markers.start('order search');
+    await click(By.xpath(`//*[@id="oneHeader"]/div[3]/div/div[1]/div[3]/div/button`));
+
+    await click(By.css(`a[title="Order Search"]`));
+
+    markers.stop('order search');
+    
+    await driver.takeScreenshot();
+    
+    markers.start('search by order number');
+    await driver.switchTo().frame(driver.findElement(By.xpath(`/html/body/div[4]/div[1]/div[2]/div[1]/div/div/div/div/div/div/div/div/div/div/article/div[2]/div/force-aloha-page/div/iframe`)));
+
+    // Click on 'ORDERNO'
+	await click(By.css(`[value="ORDERNO"]`));
+
+    await typeText('SFDCCA131668413', By.css(`#j_id0\\3Aj_id7\\3Asearch_flds\\3Aorder_no_fld`));
+     
+    // Click on 'Search'
+	await click(By.css(`#j_id0\\3Aj_id7\\3Asearch_flds\\3Aj_id64\\3A bottom\\3Aj_id65`));
+
+     markers.stop('search by order number');
+
+    // Make driver sleep for 5 seconds
+    await driver.sleep(1000);
+
+    markers.start('order search results');
+    // Click on 'SFDCCA131668413'
+
+	await click(By.css(`a`));
+
+    await driver.takeScreenshot();
+
+    await driver.switchTo().defaultContent()
+
+    markers.stop('order search results');
+    
+    await driver.takeScreenshot();
+
+    // Make driver sleep for 5 seconds
+    await driver.sleep(1000);
+
+    await click(By.css(`a[title="Order_Detail"]`));
+
+    //await click(By.css(`a[title="Close Tab"]`));
+    //await click(By.className(`slds-dropdown__item closeTab`));
+    
+}
+
+async function configureDriver() {
+    await driver.manage().window().setRect({ 
+        width: 1200, 
+        height: 1288
+    });
+    await driver.manage().setTimeouts({
+        implicit: 7 * 1000, // If an element is not found, reattempt for this many milliseconds
+    });
+}
+
+
+
+async function click(selector) {
+    await simulateHumanDelay();
+
+    const configuredTimeouts = await driver.manage().getTimeouts();
+    const clickAttemptEndTime = Date.now() + configuredTimeouts.implicit;
+
+    await reattemptUntil(attemptToClick, clickAttemptEndTime);
+    
+    async function attemptToClick() {
+        await driver.findElement(selector)
+                    .click();
+    }
+}
+
+async function reattemptUntil(attemptActionFn, attemptEndTime) {
+    const TIME_BETWEEN_ATTEMPTS = 100;
+    let numberOfAttempts = 0;
+    let attemptError;
+    while (Date.now() < attemptEndTime || numberOfAttempts === 0) {
+        try {
+            numberOfAttempts += 1;
+            await attemptActionFn();
+        }
+        catch (error) {
+            attemptError = error;
+            await driver.sleep(TIME_BETWEEN_ATTEMPTS);
+            continue; // Attempt failed, reattempt
+        }
+        attemptError = null;
+        break; // Attempt succeeded, stop attempting
+    }
+
+    const wasAttemptSuccessful = !attemptError;
+    if (!wasAttemptSuccessful) {
+        throw attemptError;
+    }
+}
+
+async function simulateHumanDelay() {
+    await driver.sleep(550);
+}
+
+async function typeText(value, selector) {
+    await simulateHumanDelay();
+    const element = await driver.findElement(selector);
+    await element.clear();
+    await element.sendKeys(value);
+}
